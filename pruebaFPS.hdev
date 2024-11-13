@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c as_id="image_acquisition" as_name="Image Acquisition 01" as_grp="[1,1]" as_ord="1">* </c>
+<c>* Example showing the different options for mapping depth and</c>
+<c>* color planes transmitted by RealSense devices. This is done by</c>
+<c>* changing the value for the parameter 'ComponentMappingMode' and</c>
+<c>* visualizing the resulting images.</c>
+<c>* </c>
+<c>* Check your system for detected RealSense devices.</c>
+<l>info_framegrabber ('RealSense', 'device', DeviceInfo, FoundDevices)</l>
+<l>if (|FoundDevices| == 0)</l>
+<l>    stop ()</l>
+<l>endif</l>
+<l>Device := FoundDevices[0]</l>
+<c></c>
+<l>open_framegrabber ('RealSense', 0, 0, 0, 0, 0, 0, 'progressive', -1, 'default', -1, 'false', 'default', 'Intel_RealSense_D455_231122301896', 0, -1, AcqHandle)</l>
+<l>DepthResolution:= '640x480'</l>
+<l>ColorResolution:= '640x480'</l>
+<c></c>
+<l>set_framegrabber_param (AcqHandle, 'DepthResolution', DepthResolution)</l>
+<l>set_framegrabber_param (AcqHandle, 'ColorResolution', ColorResolution)</l>
+<l>set_framegrabber_param (AcqHandle, 'ComponentMappingMode', 'None')</l>
+<l>set_framegrabber_param (AcqHandle, 'VisualPreset', 'HighDensity')</l>
+<l>set_framegrabber_param (AcqHandle, '[Stream]StreamBufferHandlingMode', 'NewestOnly')</l>
+<c></c>
+<l>get_framegrabber_param (AcqHandle, 'Width', Width)</l>
+<l>get_framegrabber_param (AcqHandle, 'Height', Height)</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window (0, 0, Width, Height, 'white', WindowDepth)</l>
+<l>dev_update_window ('off')</l>
+<c></c>
+<l>dev_update_off ()</l>
+<c></c>
+<l>grab_image_start (AcqHandle, -1)</l>
+<l>dev_set_lut ('jet')</l>
+<c></c>
+<l>MinRange := 0</l>
+<l>MaxRange := 5000</l>
+<l>Multi := 255.0 / (MaxRange - MinRange)</l>
+<l>GrabCount := 1000</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<l>grab_data_async (Image, Region1, Contours1, AcqHandle, -1, Data1)</l>
+<l>select_obj (Image, Z, 3)</l>
+<l>scale_image (Z, ImageDepthScaled, Multi, 0)</l>
+<l>     convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
+<l>     rotate_image (ImageScaled, ImageScaled, 180, 'constant')</l>
+<l>dev_display (ImageScaled)</l>
+<l>dev_disp_text ('Please wait. Acquiring ' + GrabCount + ' images.', 'window', 'top', 'left', 'forest green', [], [])</l>
+<c>* </c>
+<c>* Measure the start time and acquire images.</c>
+<l>count_seconds (SecondsStart)</l>
+<l>for Index := 1 to GrabCount by 1</l>
+<c>    * To measure the raw frame rate, do not add any extra</c>
+<c>    * processing inside this loop.</c>
+<l>    grab_data_async (Image, Region1, Contours1, AcqHandle, -1, Data1)</l>
+<c>     * scale_image_max </c>
+<l>     select_obj (Image, Z, 3)</l>
+<l>     scale_image (Z, ImageDepthScaled, Multi, 0)</l>
+<l>     convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
+<l>     rotate_image (ImageScaled, ImageScaled, 180, 'constant')</l>
+<l>endfor</l>
+<l>count_seconds (SecondsEnd)</l>
+<l>get_framegrabber_param (AcqHandle, 'buffer_frameid', LastFrameID)</l>
+<c>* </c>
+<c>* Stop acquisition and release device.</c>
+<l>set_framegrabber_param (AcqHandle, 'do_abort_grab', -1)</l>
+<l>close_framegrabber (AcqHandle)</l>
+<c>* </c>
+<c>* Enable HDevelop live update.</c>
+<l>dev_update_on ()</l>
+<l>dev_display (ImageScaled)</l>
+<c>* </c>
+<c>* Calculate and display the average frame rate.</c>
+<l>FPS := GrabCount / (SecondsEnd - SecondsStart)</l>
+<l>dev_disp_text ('Reached ' + FPS + ' fps', 'window', 'top', 'left', 'forest green', [], [])</l>
+<c>* </c>
+<c>* Check if the frame counter skipped a frame. This indicates</c>
+<c>* that not all images that were exposed on the device were</c>
+<c>* grabbed, or that images got lost during transfer.</c>
+<l>FrameDiff := LastFrameID - (GrabCount + 1)</l>
+<l>if (FrameDiff &gt; 0)</l>
+<c>    * If this is the case, print a warning message.</c>
+<l>    SkipPercent := (100.0 * (FrameDiff + GrabCount) / GrabCount) - 100</l>
+<l>    Text := FrameDiff + ' frames were skipped.'</l>
+<l>    Text[1] := 'Camera frame rate is ' + SkipPercent + '% higher than grabbed frame rate!'</l>
+<l>    dev_disp_text (Text, 'window', 'bottom', 'left', 'orange red', [], [])</l>
+<l>endif</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

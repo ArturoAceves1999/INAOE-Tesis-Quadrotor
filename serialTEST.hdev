@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.11.0.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* Note: This example is meant to demonstrate the use of the serial interface</c>
+<c>* of HALCON.  On Unix machines, the output and input is from /dev/tty, i.e., the</c>
+<c>* window from which you have started HDevelop.  On Windows NT machines,</c>
+<c>* this program will only run if you have a device attached to COM1.</c>
+<c>* </c>
+<c>* Open the serial interface (for reading and writing).</c>
+<l>get_system ('operating_system', OpSystem)</l>
+<l>if (OpSystem == 'Windows NT')</l>
+<l>    open_serial ('COM3', SerialHandle)</l>
+<l>else</l>
+<l>    open_serial ('/dev/ttyTHS1', SerialHandle)</l>
+<l>endif</l>
+<l>var1 := 55</l>
+<c></c>
+<c>* Set the parameters of the serial interface (e.g., a character-based terminal).</c>
+<l>set_serial_param (SerialHandle, 115200, 8, 'none', 'none', 1, 1000, 'unchanged')</l>
+<c>* Display a nice message on the terminal.</c>
+<l>write_serial (SerialHandle, ords('Hello Rasp! This is supposed to be  a long text, hope it gets there1\n\r'))</l>
+<l>write_serial (SerialHandle, ords('Hello Rasp! This is supposed to be  a long text, hope it gets there2\n\r'))</l>
+<l>write_serial (SerialHandle, ords('Hello Rasp! This is supposed to be  a long text, hope it gets there3\n\r'))</l>
+<c>* Now read 10 characters from the terminal...</c>
+<l>read_serial (SerialHandle, 10, Data)</l>
+<c>* ...and if the user typed some characters within the one second...</c>
+<l>if (|Data| &gt; 0)</l>
+<c>    * ...convert the read data to a string.</c>
+<l>     Read := chrt(Data)</l>
+<l>endif</l>
+<c>* Finally, close the serial interface so other programs can use it.</c>
+<l>close_serial (SerialHandle)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
