@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.11.0.0">
+<procedure name="getVariableHalcon">
+<interface>
+<ic>
+<par name="inputPython" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="outputPython" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>varHalcon := 10</l>
+<c></c>
+<l>outputPython := varHalcon + inputPython</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="getVariableHalcon">
+<parameters>
+<parameter id="inputPython"/>
+<parameter id="outputPython"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

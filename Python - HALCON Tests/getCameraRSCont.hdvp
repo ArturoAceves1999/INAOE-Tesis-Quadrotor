@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="23.11.0.0">
+<procedure name="getCameraRSCont">
+<interface/>
+<body>
+<c>* </c>
+<c>* Example showing the different options for mapping depth and</c>
+<c>* color planes transmitted by RealSense devices. This is done by</c>
+<c>* changing the value for the parameter 'ComponentMappingMode' and</c>
+<c>* visualizing the resulting images.</c>
+<c>* </c>
+<c>* Check your system for detected RealSense devices.</c>
+<l>info_framegrabber ('RealSense', 'device', DeviceInfo, FoundDevices)</l>
+<l>if (|FoundDevices| == 0)</l>
+<l>    stop ()</l>
+<l>endif</l>
+<l>Device := FoundDevices[0]</l>
+<c></c>
+<l>open_framegrabber ('RealSense', 0, 0, 0, 0, 0, 0, 'progressive', -1, 'default', -1, 'false', 'default', 'Intel_RealSense_D455_231122301896', 0, -1, AcqHandle)</l>
+<l>DepthResolution:= '640x480'</l>
+<l>ColorResolution:= '640x480'</l>
+<c></c>
+<l>set_framegrabber_param (AcqHandle, 'DepthResolution', DepthResolution)</l>
+<l>set_framegrabber_param (AcqHandle, 'ColorResolution', ColorResolution)</l>
+<l>set_framegrabber_param (AcqHandle, 'ComponentMappingMode', 'None')</l>
+<l>set_framegrabber_param (AcqHandle, 'VisualPreset', 'HighDensity')</l>
+<l>set_framegrabber_param (AcqHandle, '[Stream]StreamBufferHandlingMode', 'NewestOnly')</l>
+<c></c>
+<l>get_framegrabber_param (AcqHandle, 'Width', Width)</l>
+<l>get_framegrabber_param (AcqHandle, 'Height', Height)</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window (0, 0, Width, Height, 'white', WindowDepth)</l>
+<l>dev_update_window ('off')</l>
+<c></c>
+<l>grab_image_start (AcqHandle, -1)</l>
+<l>dev_set_lut ('jet')</l>
+<c></c>
+<l>MinRange := 0</l>
+<l>MaxRange := 5000</l>
+<l>Multi := 255.0 / (MaxRange - MinRange)</l>
+<c></c>
+<l> while (true)</l>
+<l>     grab_data_async (Image, Region1, Contours1, AcqHandle, -1, Data1)</l>
+<c>     * scale_image_max </c>
+<l>     select_obj (Image, Z, 3)</l>
+<l>     scale_image (Z, ImageDepthScaled, Multi, 0)</l>
+<l>     convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
+<l>     rotate_image (ImageScaled, ImageScaled, 180, 'constant')</l>
+<l>     get_grayval (ImageScaled, 240, 320, Grayval)</l>
+<l>     Measuremente := Grayval/Multi</l>
+<l>     dev_set_window (WindowDepth)</l>
+<l>     * dev_clear_window ()</l>
+<l>     dev_display (ImageScaled)</l>
+<c>    * Image Acquisition 03: Do something</c>
+<l> endwhile</l>
+<c></c>
+<c>* </c>
+<c>* Release the device.</c>
+<l>close_framegrabber (AcqHandle)</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="getCameraRSCont">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
