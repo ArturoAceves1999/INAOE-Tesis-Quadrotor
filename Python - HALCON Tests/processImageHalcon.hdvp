@@ -17,12 +17,23 @@
 </oc>
 </interface>
 <body>
+<l>get_image_size (Z, Width, Height)</l>
+<c></c>
 <l>scale_image (Z, ImageDepthScaled, Multi, 0)</l>
 <l>convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
-<l>rotate_image (ImageScaled, ImageHalcon, 180, 'constant')</l>
-<l>get_grayval (ImageScaled, 240, 320, GrayVal)</l>
+<l>rotate_image (ImageScaled, ImageRotated, 180, 'constant')</l>
+<l>get_grayval (ImageScaled, Height/2, Width/2, GrayVal)</l>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
+<c></c>
+<l>threshold (ImageRotated, Regions, 18, 126)</l>
+<l>     opening_circle (Regions, RegionOpening, 7)</l>
+<l>     *erosion_circle (RegionOpening, RegionErosion, 5)</l>
+<l>     dilation_circle (RegionOpening, RegionDilation, 20)</l>
+<c>* dilation_circle</c>
+<c></c>
+<c></c>
+<l>region_to_bin (RegionDilation, ImageHalcon, 255, 0, Width, Height)</l>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
