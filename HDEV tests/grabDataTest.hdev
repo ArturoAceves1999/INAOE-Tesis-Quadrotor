@@ -45,12 +45,19 @@
 <l>     select_obj (Image, Z, 3)</l>
 <l>     scale_image (Z, ImageDepthScaled, Multi, 0)</l>
 <l>     convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
+<l>    dev_display (Regions)</l>
 <l>     rotate_image (ImageScaled, ImageScaled, 180, 'constant')</l>
+<l>     threshold (ImageScaled, Regions, 18, 126)</l>
+<l>     opening_circle (Regions, RegionOpening, 7)</l>
+<l>     *erosion_circle (RegionOpening, RegionErosion, 5)</l>
+<l>     dilation_circle (RegionOpening, RegionDilation, 20)</l>
+<c></c>
+<l>     paint_region (Regions, ImageScaled, ImageResult, 255, 'fill')</l>
 <l>     get_grayval (ImageScaled, 240, 320, Grayval)</l>
 <l>     Measuremente := Grayval/Multi</l>
 <l>     dev_set_window (WindowDepth)</l>
 <l>     * dev_clear_window ()</l>
-<l>     dev_display (ImageScaled)</l>
+<l>     dev_display (ImageResult)</l>
 <c>    * Image Acquisition 03: Do something</c>
 <l> endwhile</l>
 <c></c>
