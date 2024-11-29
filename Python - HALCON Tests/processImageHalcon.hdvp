@@ -14,6 +14,7 @@
 <oc>
 <par name="GrayVal" base_type="ctrl" dimension="0"/>
 <par name="DeptVal" base_type="ctrl" dimension="0"/>
+<par name="XYFarthestPoint" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
@@ -23,17 +24,28 @@
 <l>convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
 <l>rotate_image (ImageScaled, ImageRotated, 180, 'constant')</l>
 <l>get_grayval (ImageScaled, Height/2, Width/2, GrayVal)</l>
+<c></c>
+<l>*threshold (ImageRotated, Regions, 18, 126)</l>
+<l>threshold (ImageRotated, Regions, 126, 255)</l>
+<l>opening_circle (Regions, RegionOpening, 3)</l>
+<l>erosion_circle (RegionOpening, RegionInterest, 20)</l>
+<c></c>
+<c>* if using avoid region logic, use this function</c>
+<l>* dilation_circle (RegionOpening, RegionInterest, 20)</l>
+<l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
+<l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
+<c></c>
+<l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
+<l>area_center(FarthestEdgeaPointRegion, _, RowFarthestEdge, ColFarthestEdge)</l>
+<l>tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
+<l>tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
+<c></c>
+<c>*Return iconic variables</c>
+<l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
+<c>*Return control variables</c>
+<l>XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
-<c></c>
-<l>threshold (ImageRotated, Regions, 18, 126)</l>
-<l>     opening_circle (Regions, RegionOpening, 7)</l>
-<l>     *erosion_circle (RegionOpening, RegionErosion, 5)</l>
-<l>     dilation_circle (RegionOpening, RegionDilation, 20)</l>
-<c>* dilation_circle</c>
-<c></c>
-<c></c>
-<l>region_to_bin (RegionDilation, ImageHalcon, 255, 0, Width, Height)</l>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
@@ -42,6 +54,7 @@
 <parameter id="GrayVal"/>
 <parameter id="ImageHalcon"/>
 <parameter id="Multi"/>
+<parameter id="XYFarthestPoint"/>
 <parameter id="Z"/>
 </parameters>
 </docu>
