@@ -45,14 +45,20 @@
 <l>     select_obj (Image, Z, 3)</l>
 <l>     scale_image (Z, ImageDepthScaled, Multi, 0)</l>
 <l>     convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
-<l>    dev_display (Regions)</l>
 <l>     rotate_image (ImageScaled, ImageScaled, 180, 'constant')</l>
-<l>     threshold (ImageScaled, Regions, 18, 126)</l>
+<c>     </c>
+<l>     threshold (ImageScaled, Regions, 126, 255)</l>
+<l>     *threshold (ImageScaled, Regions, 18, 126)</l>
 <l>     opening_circle (Regions, RegionOpening, 7)</l>
 <l>     *erosion_circle (RegionOpening, RegionErosion, 5)</l>
 <l>     dilation_circle (RegionOpening, RegionDilation, 20)</l>
+<l>     distance_transform (RegionDilation, DistanceImage, 'chessboard', 'true', 640, 480)</l>
+<l>     min_max_gray(RegionDilation, DistanceImage, 0, _, MaxValue, _)</l>
+<l>     threshold(DistanceImage, FarthestPointRegion, MaxValue, MaxValue)</l>
+<l>     area_center(FarthestPointRegion, _, RowFarthest, ColFarthest)</l>
+<l>     gen_circle (Circle, RowFarthest, ColFarthest, 30)</l>
 <c></c>
-<l>     paint_region (Regions, ImageScaled, ImageResult, 255, 'fill')</l>
+<l>     paint_region (Circle, ImageScaled, ImageResult, 255, 'fill')</l>
 <l>     get_grayval (ImageScaled, 240, 320, Grayval)</l>
 <l>     Measuremente := Grayval/Multi</l>
 <l>     dev_set_window (WindowDepth)</l>
