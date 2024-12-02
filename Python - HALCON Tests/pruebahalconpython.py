@@ -91,7 +91,7 @@ def halconProcessing(depth_image, externalcall, Multi):
     deptVal = externalcall.get_output_control_param_by_name('DeptVal')
     XYfarthest = externalcall.get_output_control_param_by_name('XYFarthestPoint')
     test = externalcall.get_output_control_param_by_name('test')
-    print(test)
+    print("We have: ", test)
     imageReturnHalcon2 = ha.himage_as_numpy_array(imageReturnHalcon)
     # print(imageReturnHalcon2.shape)
     # print(deptVal)
