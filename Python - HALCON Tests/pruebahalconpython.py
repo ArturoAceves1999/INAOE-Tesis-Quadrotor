@@ -4,7 +4,6 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
-import math
 
 
 def variablesStart():
@@ -20,9 +19,10 @@ def variablesStart():
 
     return xresolution, yresolution, framescamera, Multi
 
+
 def halconInitialize():
     print("Initializing Halcon programs, please wait...")
-    externalCall = 0
+    externalcall = 0
     try:
         hdev_engine = ha.HDevEngine()
         hdev_engine.set_attribute("debug_port", 57786)
@@ -30,13 +30,14 @@ def halconInitialize():
         hdev_engine.start_debug_server()
         hdev_engine.set_procedure_path(os.getcwd())
         external = ha.HDevProcedure.load_external('processImageHalcon')
-        externalCall = ha.HDevProcedureCall(external)
+        externalcall = ha.HDevProcedureCall(external)
         print("Halcon programs initialized successfully!")
     except:
-        externalCall = 0
+        externalcall = 0
         print("Halcon programs couldn't be initialized, please check.")
     finally:
-        return externalCall
+        return externalcall
+
 
 def cameraInitialize(xresolution, yresolution, framescamera):
     print("Initializing camera, please wait...")
@@ -56,89 +57,95 @@ def cameraInitialize(xresolution, yresolution, framescamera):
     finally:
         return pipeline
 
-def cameraData(pipeline, externalCall, Multi):
-    try:
-        while True:
-            # Wait for a coherent pair of frames: depth and color
-            start = time.time()
-            frames = pipeline.wait_for_frames()
-            depth_frame = frames.get_depth_frame()
-            color_frame = frames.get_color_frame()
-            hole_filling = rs.hole_filling_filter()
-            filled_depth = hole_filling.process(depth_frame)
 
-            if not depth_frame or not color_frame:
-                continue
+def cameraData(pipeline):
+    # Wait for a coherent pair of frames: depth and color
+    frames = pipeline.wait_for_frames()
+    depth_frame = frames.get_depth_frame()
+    color_frame = frames.get_color_frame()
+    hole_filling = rs.hole_filling_filter()
+    filled_depth = hole_filling.process(depth_frame)
 
-            # Convert images to numpy arrays
-            depth_image = np.asanyarray(filled_depth.get_data())
-            color_image = np.asanyarray(color_frame.get_data())
+    """
+    if not depth_frame or not color_frame:
+        continue
+    """
 
-            # now = datetime.datetime.now()
-            midx = 320
-            midy = 240
-            depthpoint = int(depth_image[midy, midx])
-            depth_imageHalcon = ha.himage_from_numpy_array(depth_image)
-            # print(type(depth_imageHalcon))
-
-            externalCall.set_input_iconic_param_by_name('Z', depth_imageHalcon)
-            externalCall.set_input_control_param_by_name('Multi', Multi)
-            externalCall.execute()
-            imageReturnHalcon = externalCall.get_output_iconic_param_by_name('ImageHalcon')
-            deptVal = externalCall.get_output_control_param_by_name('DeptVal')
-            XYfarthest = externalCall.get_output_control_param_by_name('XYFarthestPoint')
-            imageReturnHalcon2 = ha.himage_as_numpy_array(imageReturnHalcon)
-            print("Farthest point area: ", XYfarthest)
-            #print(imageReturnHalcon2.shape)
-            #print(deptVal)
-
-            # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-            depth_colormap = cv2.rotate(cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET), cv2.ROTATE_180)
-            color_image = cv2.rotate(color_image, cv2.ROTATE_180)
-            depthHALCON_colormap = cv2.applyColorMap(imageReturnHalcon2, cv2.COLORMAP_JET)
-
-            cv2.circle(depthHALCON_colormap, (midx, midy), 4, (0, 0, 255), -1)
-            cv2.putText(depthHALCON_colormap, "{} mm".format(deptVal), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
-            #cv2.circle(depth_colormap, (midx, midy), 4, (0, 0, 255), -1)
-            #cv2.putText(depth_colormap, "{} mm".format(depthpoint), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
-            cv2.circle(color_image, (XYfarthest[0], XYfarthest[1]), 4, (0, 0, 255), -1)
-            cv2.putText(color_image, "HERE", (XYfarthest[0], XYfarthest[1] - 10), 0, 1, (0, 0, 255), 2)
-            #time.sleep(0.05)
-
-            end = time.time()
-            print("FPS: ",round(1/(end-start)))
-
-            depth_colormap_dim = depth_colormap.shape
-            color_colormap_dim = color_image.shape
-
-            # If depth and color resolutions are different, resize color image to match depth image for display
-            if depth_colormap_dim != color_colormap_dim:
-                resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]),
-                                                 interpolation=cv2.INTER_AREA)
-                images = np.hstack((depthHALCON_colormap, color_image))
-            else:
-                images = np.hstack((depthHALCON_colormap, color_image))
-
-            # Show images
-            cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', images)
-            cv2.waitKey(1)
+    # Convert images to numpy arrays
+    depth_image = np.asanyarray(filled_depth.get_data())
+    color_image = np.asanyarray(color_frame.get_data())
+    return depth_image, color_image
 
 
-    finally:
+def halconProcessing(depth_image, externalcall, Multi):
+    # now = datetime.datetime.now()
+    depth_imageHalcon = ha.himage_from_numpy_array(depth_image)
+    # print(type(depth_imageHalcon))
 
-        # Stop streaming
-        pipeline.stop()
+    externalcall.set_input_iconic_param_by_name('Z', depth_imageHalcon)
+    externalcall.set_input_control_param_by_name('Multi', Multi)
+    externalcall.execute()
+    imageReturnHalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
+    deptVal = externalcall.get_output_control_param_by_name('DeptVal')
+    XYfarthest = externalcall.get_output_control_param_by_name('XYFarthestPoint')
+    imageReturnHalcon2 = ha.himage_as_numpy_array(imageReturnHalcon)
+    # print(imageReturnHalcon2.shape)
+    # print(deptVal)
+
+    return imageReturnHalcon2, XYfarthest, deptVal
+
+
+def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, midx, midy):
+    # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
+    depth_colormap = cv2.rotate(cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET),
+                                cv2.ROTATE_180)
+    color_image = cv2.rotate(color_image, cv2.ROTATE_180)
+    depthHALCON_colormap = cv2.applyColorMap(imageReturnHalcon2, cv2.COLORMAP_JET)
+
+    print(midx,midy)
+    cv2.circle(depthHALCON_colormap, (midx, midy), 4, (0, 0, 255), -1)
+    cv2.putText(depthHALCON_colormap, "{} mm".format(deptVal), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
+    # cv2.circle(depth_colormap, (midx, midy), 4, (0, 0, 255), -1)
+    # cv2.putText(depth_colormap, "{} mm".format(depthpoint), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
+    cv2.circle(color_image, (XYfarthest[0], XYfarthest[1]), 4, (0, 0, 255), -1)
+    cv2.putText(color_image, "HERE", (XYfarthest[0], XYfarthest[1] - 10), 0, 1, (0, 0, 255), 2)
+    # time.sleep(0.05)
+
+    # depth_colormap_dim = depth_colormap.shape
+    # color_colormap_dim = color_image.shape
+
+    images = np.hstack((depthHALCON_colormap, color_image))
+
+    # Show images
+    cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
+    cv2.imshow('RealSense', images)
+    cv2.waitKey(1)
+
 
 def main():
     [xresolution, yresolution, framescamera, Multi] = variablesStart()
-    externalcal = halconInitialize()
-    if externalcal == 0:
+    externalcall = halconInitialize()
+    midx = int(xresolution/2)
+    midy = int(yresolution/2)
+    if externalcall == 0:
         exit(0)
     pipeline = cameraInitialize(xresolution, yresolution, framescamera)
     if pipeline == 0:
         exit(0)
-    cameraData(pipeline, externalcal,Multi)
+    try:
+        while True:
 
-#MAIN CALL
+            start = time.time()
+            [depth_image, color_image] = cameraData(pipeline)
+            # depthpoint = int(depth_image[midy, midx])
+            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, Multi)
+            print("Farthest point area: ", XYfarthest)
+            end = time.time()
+            print("FPS: ", round(1 / (end - start)))
+            showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, midx, midy)
+    finally:
+        pipeline.stop()
+
+
+# MAIN CALL
 main()
