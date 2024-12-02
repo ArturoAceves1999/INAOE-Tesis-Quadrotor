@@ -130,7 +130,7 @@ def main():
     externalcall = halconInitialize()
     midx = int(xresolution/2)
     midy = int(yresolution/2)
-    OldXYfarthest = [0, 0]
+    oldXYfarthest = [0, 0]
     if externalcall == 0:
         exit(0)
     pipeline = cameraInitialize(xresolution, yresolution, framescamera)
