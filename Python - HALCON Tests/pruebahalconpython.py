@@ -81,13 +81,17 @@ def halconProcessing(depth_image, externalcall, Multi):
     # now = datetime.datetime.now()
     depth_imageHalcon = ha.himage_from_numpy_array(depth_image)
     # print(type(depth_imageHalcon))
+    XY = [100,200]
 
     externalcall.set_input_iconic_param_by_name('Z', depth_imageHalcon)
     externalcall.set_input_control_param_by_name('Multi', Multi)
+    externalcall.set_input_control_param_by_name('OldXYFarthestPoint', XY)
     externalcall.execute()
     imageReturnHalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
     deptVal = externalcall.get_output_control_param_by_name('DeptVal')
     XYfarthest = externalcall.get_output_control_param_by_name('XYFarthestPoint')
+    test = externalcall.get_output_control_param_by_name('test')
+    print(test)
     imageReturnHalcon2 = ha.himage_as_numpy_array(imageReturnHalcon)
     # print(imageReturnHalcon2.shape)
     # print(deptVal)

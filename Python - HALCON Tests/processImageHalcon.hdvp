@@ -10,11 +10,13 @@
 </oo>
 <ic>
 <par name="Multi" base_type="ctrl" dimension="0"/>
+<par name="OldXYFarthestPoint" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
 <par name="GrayVal" base_type="ctrl" dimension="0"/>
 <par name="DeptVal" base_type="ctrl" dimension="0"/>
 <par name="XYFarthestPoint" base_type="ctrl" dimension="0"/>
+<par name="test" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
@@ -50,6 +52,7 @@
 <l>XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
+<l>test := OldXYFarthestPoint[0]</l>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
@@ -58,8 +61,10 @@
 <parameter id="GrayVal"/>
 <parameter id="ImageHalcon"/>
 <parameter id="Multi"/>
+<parameter id="OldXYFarthestPoint"/>
 <parameter id="XYFarthestPoint"/>
 <parameter id="Z"/>
+<parameter id="test"/>
 </parameters>
 </docu>
 </procedure>
