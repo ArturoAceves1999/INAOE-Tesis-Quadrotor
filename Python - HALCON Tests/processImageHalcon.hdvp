@@ -52,7 +52,8 @@
 <l>XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
-<l>test := OldXYFarthestPoint[1]</l>
+<l>*test := OldXYFarthestPoint[1]</l>
+<l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], test)</l>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
