@@ -46,6 +46,12 @@
 <l>tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
 <l>tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
 <c></c>
+<l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
+<l>test := 0</l>
+<l>if(DifferencePoint&gt;=20)</l>
+<l>    test := 1 </l>
+<l>endif</l>
+<c></c>
 <c>*Return iconic variables</c>
 <l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <c>*Return control variables</c>
@@ -53,7 +59,6 @@
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
 <l>*test := OldXYFarthestPoint[1]</l>
-<l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], test)</l>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
