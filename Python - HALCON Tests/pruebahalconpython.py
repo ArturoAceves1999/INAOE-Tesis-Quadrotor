@@ -85,7 +85,7 @@ def halconProcessing(depthimage, externalcall, multi, oldXYfarthest, oldimagehal
     externalcall.set_input_iconic_param_by_name('Z', depthimageHalcon)
     externalcall.set_input_control_param_by_name('Multi', multi)
     externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
-    externalcall.set_input_control_param_by_name('OldImage', oldimagehalcon)
+    externalcall.set_input_control_param_by_name('OldFrame', oldimagehalcon)
     externalcall.execute()
     imagereturnhalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
     deptval = externalcall.get_output_control_param_by_name('DeptVal')
