@@ -4,6 +4,7 @@
 <interface>
 <io>
 <par name="Z" base_type="iconic" dimension="0"/>
+<par name="OldFrame" base_type="iconic" dimension="0"/>
 </io>
 <oo>
 <par name="ImageHalcon" base_type="iconic" dimension="0"/>
@@ -41,20 +42,19 @@
 <l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
 <l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
 <c></c>
+<l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
+<l>check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
+<l>area_center(Selected, test, _, _)</l>
+<c></c>
 <l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
-<l>area_center(FarthestEdgeaPointRegion, _, RowFarthestEdge, ColFarthestEdge)</l>
+<l>area_center_gray(FarthestEdgeaPointRegion, ImageScaled, _, RowFarthestEdge, ColFarthestEdge)</l>
 <l>tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
 <l>tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
 <c></c>
 <l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
-<l>test := 0</l>
-<l>if(DifferencePoint&lt;=20)</l>
-<l>    test := 1 </l>
-<l>endif</l>
 <c></c>
 <c>*------------------Return iconic variables</c>
 <c></c>
-<l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <c></c>
 <c>*------------------Return control variables</c>
 <l>ifelse(DifferencePoint&lt;=20)</l>
@@ -73,6 +73,7 @@
 <parameter id="GrayVal"/>
 <parameter id="ImageHalcon"/>
 <parameter id="Multi"/>
+<parameter id="OldFrame"/>
 <parameter id="OldXYFarthestPoint"/>
 <parameter id="XYFarthestPoint"/>
 <parameter id="Z"/>
