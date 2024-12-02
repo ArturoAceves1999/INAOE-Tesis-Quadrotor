@@ -131,7 +131,7 @@ def main():
     midx = int(xresolution/2)
     midy = int(yresolution/2)
     oldXYfarthest = [0, 0]
-    oldimagehalcon =ha.himage_from_numpy_array(np.zeros((xresolution,yresolution)))
+    oldimagehalcon =ha.himage_from_numpy_array(np.zeros((xresolution,yresolution), dtype=np.int8))
     if externalcall == 0:
         exit(0)
     pipeline = cameraInitialize(xresolution, yresolution, framescamera)
