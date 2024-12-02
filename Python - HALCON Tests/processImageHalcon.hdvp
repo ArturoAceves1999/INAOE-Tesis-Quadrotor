@@ -25,8 +25,12 @@
 <l>rotate_image (ImageScaled, ImageRotated, 180, 'constant')</l>
 <l>get_grayval (ImageScaled, Height/2, Width/2, GrayVal)</l>
 <c></c>
+<c></c>
+<l>treshholdregion := 2500*Multi</l>
+<l>tuple_round (treshholdregion, treshholdregion)</l>
+<c></c>
 <l>*threshold (ImageRotated, Regions, 18, 126)</l>
-<l>threshold (ImageRotated, Regions, 126, 255)</l>
+<l>threshold (ImageRotated, Regions,treshholdregion, 255)</l>
 <l>opening_circle (Regions, RegionOpening, 3)</l>
 <l>erosion_circle (RegionOpening, RegionInterest, 20)</l>
 <c></c>

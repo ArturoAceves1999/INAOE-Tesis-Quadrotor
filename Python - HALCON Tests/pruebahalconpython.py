@@ -14,7 +14,7 @@ def variablesStart():
 
     # Scale of image values
     MinRange = 0
-    MaxRange = 5000
+    MaxRange = 7000
     Multi = 255.0 / (MaxRange - MinRange)
 
     return xresolution, yresolution, framescamera, Multi
@@ -63,7 +63,7 @@ def cameraData(pipeline):
     frames = pipeline.wait_for_frames()
     depth_frame = frames.get_depth_frame()
     color_frame = frames.get_color_frame()
-    hole_filling = rs.hole_filling_filter()
+    hole_filling = rs.hole_filling_filter(2)
     filled_depth = hole_filling.process(depth_frame)
 
     """
@@ -102,7 +102,6 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
     color_image = cv2.rotate(color_image, cv2.ROTATE_180)
     depthHALCON_colormap = cv2.applyColorMap(imageReturnHalcon2, cv2.COLORMAP_JET)
 
-    print(midx,midy)
     cv2.circle(depthHALCON_colormap, (midx, midy), 4, (0, 0, 255), -1)
     cv2.putText(depthHALCON_colormap, "{} mm".format(deptVal), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
     # cv2.circle(depth_colormap, (midx, midy), 4, (0, 0, 255), -1)
