@@ -48,14 +48,20 @@
 <c></c>
 <l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
 <l>test := 0</l>
-<l>if(DifferencePoint&gt;=20)</l>
+<l>if(DifferencePoint&lt;=20)</l>
 <l>    test := 1 </l>
 <l>endif</l>
 <c></c>
-<c>*Return iconic variables</c>
+<c>*------------------Return iconic variables</c>
+<c></c>
 <l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
-<c>*Return control variables</c>
-<l>XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
+<c></c>
+<c>*------------------Return control variables</c>
+<l>ifelse(DifferencePoint&lt;=20)</l>
+<l>    XYFarthestPoint := OldXYFarthestPoint</l>
+<l>else</l>
+<l>    XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
+<l>endif</l>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
 <l>*test := OldXYFarthestPoint[1]</l>
