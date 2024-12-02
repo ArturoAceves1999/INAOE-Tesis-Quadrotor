@@ -80,6 +80,7 @@ def cameraData(pipeline):
 def halconProcessing(depthimage, externalcall, multi, oldXYfarthest, oldimagehalcon):
     # now = datetime.datetime.now()
     depthimageHalcon = ha.himage_from_numpy_array(depthimage)
+    oldimagehalcon = ha.himage_from_numpy_array(oldimagehalcon)
     # print(type(depth_imageHalcon))
 
     externalcall.set_input_iconic_param_by_name('Z', depthimageHalcon)
@@ -131,7 +132,7 @@ def main():
     midx = int(xresolution/2)
     midy = int(yresolution/2)
     oldXYfarthest = [0, 0]
-    oldimagehalcon =ha.himage_from_numpy_array(np.zeros((xresolution,yresolution), dtype=np.int8))
+    oldimagehalcon =np.zeros((xresolution,yresolution), dtype=np.int8)
     if externalcall == 0:
         exit(0)
     pipeline = cameraInitialize(xresolution, yresolution, framescamera)
