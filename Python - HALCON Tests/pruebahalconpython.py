@@ -131,6 +131,7 @@ def main():
     midx = int(xresolution/2)
     midy = int(yresolution/2)
     oldXYfarthest = [0, 0]
+    oldimagehalcon =np.zeros((xresolution,yresolution))
     if externalcall == 0:
         exit(0)
     pipeline = cameraInitialize(xresolution, yresolution, framescamera)
