@@ -55,9 +55,8 @@
 <l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
 <l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
 <c></c>
-<c></c>
 <l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
-<l>area_center_gray(FarthestEdgeaPointRegion, ImageScaled, _, RowFarthestEdge, ColFarthestEdge)</l>
+<l>area_center(FarthestEdgeaPointRegion, _, RowFarthestEdge, ColFarthestEdge)</l>
 <l>tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
 <l>tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
 <c></c>
