@@ -23,6 +23,8 @@
 <body>
 <l>get_image_size (Z, Width, Height)</l>
 <c></c>
+<c>*----------------------------------------Image processing START----------------------</c>
+<c></c>
 <l>scale_image (Z, ImageDepthScaled, Multi, 0)</l>
 <l>convert_image_type (ImageDepthScaled, ImageScaled, 'byte')</l>
 <l>rotate_image (ImageScaled, ImageRotated, 180, 'constant')</l>
@@ -39,13 +41,20 @@
 <c></c>
 <c>* if using avoid region logic, use this function</c>
 <l>* dilation_circle (RegionOpening, RegionInterest, 20)</l>
-<l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
-<l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
-<c></c>
 <l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <l>convert_image_type (OldFrame, OldFrame, 'byte')</l>
 <l>check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
 <l>area_center(Selected, test, _, _)</l>
+<l>if(test&lt;=3000)</l>
+<l>    threshold (OldFrame, RegionInterest,254, 255)</l>
+<l>    region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
+<l>endif</l>
+<c></c>
+<c>*----------------------------------------Image processing END----------------------</c>
+<c></c>
+<l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
+<l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
+<c></c>
 <c></c>
 <l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
 <l>area_center_gray(FarthestEdgeaPointRegion, ImageScaled, _, RowFarthestEdge, ColFarthestEdge)</l>
