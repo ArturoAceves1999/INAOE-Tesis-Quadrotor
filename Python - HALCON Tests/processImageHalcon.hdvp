@@ -43,8 +43,8 @@
 <l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
 <c></c>
 <l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
-<l>* check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
-<l>* area_center(Selected, test, _, _)</l>
+<l>check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
+<l>area_center(Selected, test, _, _)</l>
 <c></c>
 <l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
 <l>area_center_gray(FarthestEdgeaPointRegion, ImageScaled, _, RowFarthestEdge, ColFarthestEdge)</l>
