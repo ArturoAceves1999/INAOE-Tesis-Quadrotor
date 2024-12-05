@@ -154,7 +154,7 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal, evationmode] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevasion, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevasion, oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2

@@ -25,7 +25,7 @@
 </oc>
 </interface>
 <body>
-<l>EvationMode:= false</l>
+<l>EvasionMode:= false</l>
 <c></c>
 <l>get_image_size (Z, Width, Height)</l>
 <c></c>
@@ -78,7 +78,7 @@
 <l>    else</l>
 <l>        XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
 <l>    endif</l>
-<l>    EvationMode:=true</l>
+<l>    EvasionMode:=true</l>
 <l>else</l>
 <l>    XYFarthestPoint:=[Width/2,Height/2]</l>
 <l>endif</l>
