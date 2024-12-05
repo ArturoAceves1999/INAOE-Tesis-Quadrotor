@@ -7,18 +7,19 @@ import time
 #from types import SimpleNamespace
 
 
+def initvariables():
+    class initvar:
+        xresolution = 640
+        yresolution = 480
+        framescamera = 30
 
-class initialVariables():
-    xresolution = 640
-    yresolution = 480
-    framescamera = 30
-
-    # Scale of image values
-    minrange = 0
-    maxrange = 7000
-    multi = 255.0 / (maxrange - minrange)
-    treshold = 2500
-    areachange = 6000
+        # Scale of image values
+        minrange = 0
+        maxrange = 7000
+        multi = 255.0 / (maxrange - minrange)
+        treshold = 2500
+        areachange = 6000
+    return initvar
 
 
 def halconInitialize():
@@ -88,8 +89,8 @@ def halconProcessing(depthimage, externalcall, multi, treshold, oldXYfarthest, o
     externalcall.set_input_iconic_param_by_name('OldFrame', oldimagehalcon)
 
     externalcall.set_input_control_param_by_name('Multi', multi)
+    externalcall.set_input_control_param_by_name('TresholdDistance', treshold)
     externalcall.set_input_control_param_by_name('AreaChange', 6000)
-    externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
     externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
     externalcall.execute()
     imagereturnhalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
@@ -133,6 +134,7 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
 def main():
     #[xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
     externalcall = halconInitialize()
+    initialVariables = initvariables()
     midx = int(initialVariables.xresolution/2)
     midy = int(initialVariables.yresolution/2)
     oldXYfarthest = [0, 0]
