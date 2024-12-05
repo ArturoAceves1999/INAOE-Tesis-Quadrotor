@@ -45,7 +45,7 @@
 <l>convert_image_type (OldFrame, OldFrame, 'byte')</l>
 <l>check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
 <l>area_center(Selected, test, _, _)</l>
-<l>if(test&lt;=3000)</l>
+<l>if(test&lt;=6000)</l>
 <l>    threshold (OldFrame, RegionInterest,254, 255)</l>
 <l>    region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <l>endif</l>
