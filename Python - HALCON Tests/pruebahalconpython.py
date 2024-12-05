@@ -21,7 +21,7 @@ def variablesStart():
     treshold = 2500
     areachange = 6000
 
-    return xresolution, yresolution, framescamera, multi, treshold, areachange
+    return xresolution, yresolution, framescamera, multi, treshold
 
 
 def halconInitialize():
