@@ -135,13 +135,13 @@ def main():
     externalcall = halconInitialize()
     y = variablesStart().zresolution()
     print(y)
-    midx = int(xresolution/2)
-    midy = int(yresolution/2)
+    midx = int(initialVariables.xresolution/2)
+    midy = int(initialVariables.yresolution/2)
     oldXYfarthest = [0, 0]
-    oldimagehalcon =np.zeros((xresolution,yresolution), dtype=np.int8)
+    oldimagehalcon =np.zeros((initialVariables.xresolution,initialVariables.yresolution), dtype=np.int8)
     if externalcall == 0:
         exit(0)
-    pipeline = cameraInitialize(xresolution, yresolution, framescamera)
+    pipeline = cameraInitialize(initialVariables.xresolution, initialVariables.yresolution, initialVariables.framescamera)
     if pipeline == 0:
         exit(0)
     try:
@@ -150,7 +150,7 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, multi, treshold, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2
