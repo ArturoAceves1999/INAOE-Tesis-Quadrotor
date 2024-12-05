@@ -131,10 +131,7 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
 
 def main():
     #[xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
-    print(initialVariables.yresolution)
     externalcall = halconInitialize()
-    y = variablesStart().zresolution()
-    print(y)
     midx = int(initialVariables.xresolution/2)
     midy = int(initialVariables.yresolution/2)
     oldXYfarthest = [0, 0]
