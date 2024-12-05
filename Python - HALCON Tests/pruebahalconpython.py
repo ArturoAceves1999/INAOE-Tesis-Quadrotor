@@ -101,15 +101,14 @@ def halconProcessing(depthimage, externalcall, multi, treshold, areachange, area
     test = externalcall.get_output_control_param_by_name('test')
     evasionmode = externalcall.get_output_control_param_by_name('EvasionMode')
     print("We have: ", test)
-    print("Evasion mode? ", evasionmode)
     imagereturnhalcon2 = ha.himage_as_numpy_array(imagereturnhalcon)
     # print(imageReturnHalcon2.shape)
     # print(deptVal)
 
-    return imagereturnhalcon2, XYfarthest, deptval
+    return imagereturnhalcon2, XYfarthest, deptval, evasionmode
 
 
-def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, midx, midy):
+def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, evasionmode, midx, midy):
     # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
     depth_colormap = cv2.rotate(cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET),
                                 cv2.ROTATE_180)
@@ -122,6 +121,7 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
     # cv2.putText(depth_colormap, "{} mm".format(depthpoint), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
     cv2.circle(color_image, (XYfarthest[0], XYfarthest[1]), 4, (0, 0, 255), -1)
     cv2.putText(color_image, "HERE", (XYfarthest[0], XYfarthest[1] - 10), 0, 1, (0, 0, 255), 2)
+    cv2.putText(color_image, "EVATION MODE: " + evasionmode, (20,20), 0, 1, (0, 0, 255), 2)
     # time.sleep(0.05)
 
     # depth_colormap_dim = depth_colormap.shape
@@ -154,13 +154,13 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevasion, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal, evasionmode] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevasion, oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2
             end = time.time()
             print("FPS: ", round(1 / (end - start)))
-            showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, midx, midy)
+            showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest, evasionmode, midx, midy)
     finally:
         pipeline.stop()
 
