@@ -12,6 +12,7 @@
 <ic>
 <par name="Multi" base_type="ctrl" dimension="0"/>
 <par name="OldXYFarthestPoint" base_type="ctrl" dimension="0"/>
+<par name="TresholdDistance" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
 <par name="GrayVal" base_type="ctrl" dimension="0"/>
@@ -31,7 +32,7 @@
 <l>get_grayval (ImageScaled, Height/2, Width/2, GrayVal)</l>
 <c></c>
 <c></c>
-<l>treshholdregion := 2500*Multi</l>
+<l>treshholdregion := TresholdDistance*Multi</l>
 <l>tuple_round (treshholdregion, treshholdregion)</l>
 <c></c>
 <l>*threshold (ImageRotated, Regions, 18, 126)</l>
@@ -84,6 +85,7 @@
 <parameter id="Multi"/>
 <parameter id="OldFrame"/>
 <parameter id="OldXYFarthestPoint"/>
+<parameter id="TresholdDistance"/>
 <parameter id="XYFarthestPoint"/>
 <parameter id="Z"/>
 <parameter id="test"/>

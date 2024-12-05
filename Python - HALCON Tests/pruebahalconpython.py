@@ -13,11 +13,12 @@ def variablesStart():
     framescamera = 30
 
     # Scale of image values
-    MinRange = 0
-    MaxRange = 7000
-    Multi = 255.0 / (MaxRange - MinRange)
+    minrange = 0
+    maxrange = 7000
+    multi = 255.0 / (maxrange - minrange)
+    treshold = 2500
 
-    return xresolution, yresolution, framescamera, Multi
+    return xresolution, yresolution, framescamera, multi, treshold
 
 
 def halconInitialize():
@@ -77,16 +78,18 @@ def cameraData(pipeline):
     return depth_image, color_image
 
 
-def halconProcessing(depthimage, externalcall, multi, oldXYfarthest, oldimagehalcon):
+def halconProcessing(depthimage, externalcall, multi, treshold, oldXYfarthest, oldimagehalcon):
     # now = datetime.datetime.now()
     depthimageHalcon = ha.himage_from_numpy_array(depthimage)
     oldimagehalcon = ha.himage_from_numpy_array(oldimagehalcon)
     # print(type(depth_imageHalcon))
 
     externalcall.set_input_iconic_param_by_name('Z', depthimageHalcon)
-    externalcall.set_input_control_param_by_name('Multi', multi)
-    externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
     externalcall.set_input_iconic_param_by_name('OldFrame', oldimagehalcon)
+
+    externalcall.set_input_control_param_by_name('Multi', multi)
+    externalcall.set_input_control_param_by_name('TresholdDistance', treshold)
+    externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
     externalcall.execute()
     imagereturnhalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
     deptval = externalcall.get_output_control_param_by_name('DeptVal')
@@ -127,7 +130,7 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
 
 
 def main():
-    [xresolution, yresolution, framescamera, Multi] = variablesStart()
+    [xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
     externalcall = halconInitialize()
     midx = int(xresolution/2)
     midy = int(yresolution/2)
@@ -144,7 +147,7 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, Multi, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, multi, treshold, oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2
