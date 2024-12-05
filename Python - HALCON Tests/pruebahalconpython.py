@@ -18,7 +18,7 @@ def initvariables():
         maxrange = 7000
         multi = 255.0 / (maxrange - minrange)
         treshold = 2500
-        areachange = 200
+        areachange = 6000
     return initvar
 
 
