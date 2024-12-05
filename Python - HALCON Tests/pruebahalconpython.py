@@ -8,6 +8,8 @@ import time
 
 def variablesStart():
     # Camera values
+    def zresolution():
+        return 640
     xresolution = 640
     yresolution = 480
     framescamera = 30
@@ -17,8 +19,9 @@ def variablesStart():
     maxrange = 7000
     multi = 255.0 / (maxrange - minrange)
     treshold = 2500
+    areachange = 6000
 
-    return xresolution, yresolution, framescamera, multi, treshold
+    return xresolution, yresolution, framescamera, multi, treshold, areachange
 
 
 def halconInitialize():
@@ -132,6 +135,8 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
 def main():
     [xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
     externalcall = halconInitialize()
+    y = variablesStart().zresolution()
+    print(y)
     midx = int(xresolution/2)
     midy = int(yresolution/2)
     oldXYfarthest = [0, 0]
