@@ -4,12 +4,11 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
+#from types import SimpleNamespace
 
 
-def variablesStart():
-    # Camera values
-    def zresolution():
-        return 640
+
+class initialVariables():
     xresolution = 640
     yresolution = 480
     framescamera = 30
@@ -20,8 +19,6 @@ def variablesStart():
     multi = 255.0 / (maxrange - minrange)
     treshold = 2500
     areachange = 6000
-
-    return xresolution, yresolution, framescamera, multi, treshold
 
 
 def halconInitialize():
@@ -133,7 +130,8 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
 
 
 def main():
-    [xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
+    #[xresolution, yresolution, framescamera, multi, treshold] = variablesStart()
+    print(initialVariables.yresolution)
     externalcall = halconInitialize()
     y = variablesStart().zresolution()
     print(y)
