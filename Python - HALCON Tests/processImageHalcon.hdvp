@@ -14,15 +14,19 @@
 <par name="OldXYFarthestPoint" base_type="ctrl" dimension="0"/>
 <par name="TresholdDistance" base_type="ctrl" dimension="0"/>
 <par name="AreaChange" base_type="ctrl" dimension="0"/>
+<par name="AreaEvation" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
 <par name="GrayVal" base_type="ctrl" dimension="0"/>
 <par name="DeptVal" base_type="ctrl" dimension="0"/>
 <par name="XYFarthestPoint" base_type="ctrl" dimension="0"/>
 <par name="test" base_type="ctrl" dimension="0"/>
+<par name="EvasionMode" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
+<l>EvationMode:= false</l>
+<c></c>
 <l>get_image_size (Z, Width, Height)</l>
 <c></c>
 <c>*----------------------------------------Image processing START----------------------</c>
@@ -53,26 +57,32 @@
 <l>endif</l>
 <c></c>
 <c>*----------------------------------------Image processing END----------------------</c>
-<c></c>
-<l>distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
-<l>min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
-<c></c>
-<l>threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
-<l>area_center(FarthestEdgeaPointRegion, _, RowFarthestEdge, ColFarthestEdge)</l>
-<l>tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
-<l>tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
-<c></c>
-<l>distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
-<c></c>
-<c>*------------------Return iconic variables</c>
-<c></c>
-<c></c>
-<c>*------------------Return control variables</c>
-<l>ifelse(DifferencePoint&lt;=20)</l>
-<l>    XYFarthestPoint := OldXYFarthestPoint</l>
+<l>area_center(RegionInterest, AreaIsEvation, _, _)</l>
+<l>ifelse(AreaIsEvation &gt; AreaEvation)</l>
+<l>    distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
+<l>    min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
+<c>    </c>
+<l>    threshold(DistanceImage, FarthestEdgeaPointRegion, MaxValue, MaxValue)</l>
+<l>    area_center(FarthestEdgeaPointRegion, _, RowFarthestEdge, ColFarthestEdge)</l>
+<l>    tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
+<l>    tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
+<c>    </c>
+<l>    distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
+<c>    </c>
+<c>    *------------------Return iconic variables</c>
+<c>    </c>
+<c>    </c>
+<c>    *------------------Return control variables</c>
+<l>    ifelse(DifferencePoint&lt;=20)</l>
+<l>        XYFarthestPoint := OldXYFarthestPoint</l>
+<l>    else</l>
+<l>        XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
+<l>    endif</l>
+<l>    EvationMode:=true</l>
 <l>else</l>
-<l>    XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
+<l>    XYFarthestPoint:=[Width/2,Height/2]</l>
 <l>endif</l>
+<c></c>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
 <l>*test := OldXYFarthestPoint[1]</l>
@@ -81,7 +91,9 @@
 <docu id="processImageHalcon">
 <parameters>
 <parameter id="AreaChange"/>
+<parameter id="AreaEvation"/>
 <parameter id="DeptVal"/>
+<parameter id="EvasionMode"/>
 <parameter id="GrayVal"/>
 <parameter id="ImageHalcon"/>
 <parameter id="Multi"/>

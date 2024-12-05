@@ -19,6 +19,7 @@ def initvariables():
         multi = 255.0 / (maxrange - minrange)
         treshold = 2500
         areachange = 6000
+        areaevation = 20000
     return initvar
 
 
@@ -79,7 +80,7 @@ def cameraData(pipeline):
     return depth_image, color_image
 
 
-def halconProcessing(depthimage, externalcall, multi, treshold, areachange, oldXYfarthest, oldimagehalcon):
+def halconProcessing(depthimage, externalcall, multi, treshold, areachange, areaevation, oldXYfarthest, oldimagehalcon):
     # now = datetime.datetime.now()
     depthimageHalcon = ha.himage_from_numpy_array(depthimage)
     oldimagehalcon = ha.himage_from_numpy_array(oldimagehalcon)
@@ -91,13 +92,16 @@ def halconProcessing(depthimage, externalcall, multi, treshold, areachange, oldX
     externalcall.set_input_control_param_by_name('Multi', multi)
     externalcall.set_input_control_param_by_name('TresholdDistance', treshold)
     externalcall.set_input_control_param_by_name('AreaChange', areachange)
+    externalcall.set_input_control_param_by_name('AreaEvation', areaevation)
     externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
     externalcall.execute()
     imagereturnhalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
     deptval = externalcall.get_output_control_param_by_name('DeptVal')
     XYfarthest = externalcall.get_output_control_param_by_name('XYFarthestPoint')
     test = externalcall.get_output_control_param_by_name('test')
+    evationmode = externalcall.get_output_control_param_by_name('EvationMode')
     print("We have: ", test)
+    print("Evation mode? ", evationmode)
     imagereturnhalcon2 = ha.himage_as_numpy_array(imagereturnhalcon)
     # print(imageReturnHalcon2.shape)
     # print(deptVal)
@@ -150,7 +154,7 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal, evationmode] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevation, oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2
