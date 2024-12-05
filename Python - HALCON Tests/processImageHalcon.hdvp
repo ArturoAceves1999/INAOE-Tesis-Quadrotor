@@ -58,7 +58,7 @@
 <c></c>
 <c>*----------------------------------------Image processing END----------------------</c>
 <l>area_center(RegionInterest, AreaIsEvation, _, _)</l>
-<l>ifelse(AreaIsEvation &gt; AreaEvation)</l>
+<l>ifelse(AreaIsEvation &lt; AreaEvation)</l>
 <l>    distance_transform (RegionInterest, DistanceImage, 'chessboard', 'true', Width, Height)</l>
 <l>    min_max_gray(RegionInterest, DistanceImage, 0, _, MaxValue, _)</l>
 <c>    </c>

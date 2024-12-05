@@ -19,7 +19,7 @@ def initvariables():
         multi = 255.0 / (maxrange - minrange)
         treshold = 2500
         areachange = 6000
-        areaevasion = 20000
+        areaevasion = 50000
     return initvar
 
 
