@@ -19,7 +19,8 @@ def initvariables():
         multi = 255.0 / (maxrange - minrange)
         treshold = 2500
         areachange = 6000
-        areaevasion = 250000
+        percentevasion = 0.1
+        areaevasion = int(percentevasion*307200) #Range between 0-307,200
     return initvar
 
 
@@ -121,7 +122,7 @@ def showImages(depth_image, imageReturnHalcon2, color_image, deptVal, XYfarthest
     # cv2.putText(depth_colormap, "{} mm".format(depthpoint), (midx, midy - 10), 0, 1, (0, 0, 255), 2)
     cv2.circle(color_image, (XYfarthest[0], XYfarthest[1]), 4, (0, 0, 255), -1)
     cv2.putText(color_image, "HERE", (XYfarthest[0], XYfarthest[1] - 10), 0, 1, (0, 0, 255), 2)
-    cv2.putText(color_image, "EVASION MODE: {}".format(evasionmode[0]), (20,70), 0, 1, (0, 0, 255), 2)
+    cv2.putText(color_image, "EVASION MODE: {}".format(evasionmode[0]), (20,40), 0, 1, (0, 0, 255), 2)
     # time.sleep(0.05)
 
     # depth_colormap_dim = depth_colormap.shape
