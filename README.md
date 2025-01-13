@@ -8,12 +8,12 @@ Developer: Arturo Aceves.
 For the image processing and communications side, we used the following components:
 
 * Intel Realsense Depth Camera D455
-* Jetson Nano (with a 64 GB memory card)
+* Jetson Nano (with a 64 GB SD memory card)
 * Raspberry Pi 4 (with a 32 GB memory card)
 
 For the UAV, we used as a base the F450 drone, which has the following components:
 
-* Pixhawk 1
+* Pixhawk 1 (with a 4 GB SD memory card)
 * 4 Brushless motor x2212-10 KV:1250
 * 4 ESC 20 Amp
 * GPS module M8N
@@ -28,6 +28,8 @@ For the UAV, we used as a base the F450 drone, which has the following component
 ### Software
 * Halcon Student Edition 23.11
 * Intel Realsense SDK
+* ROS 2 Humble
+* Gazebo Harmonic
 * Python 3.10
 
 It is important to mention that the main OS used was Ubuntu, as most of the simulation software is available (or more stable in some cases) on that system.
@@ -52,7 +54,7 @@ Now, we can go ahead with the installation of all the other dependencies:
 
 ##### Realsense Python library and SDK
 
-Unfortunately for us, there is no official ARM or AARCH-based official distribution from Intel, so we need to build it. Fortunately for us, the user ysozkaya already built a program that can clean our Jetson and set everything to build the library, [you can see it here](https://github.com/ysozkaya/RealSense-Jetson)
+Unfortunately for us, there is no official ARM or AARCH-based official distribution from Intel, so we need to build it. Fortunately for us, the user `ysozkaya` already built a program that can clean our Jetson and set everything to build the library, [you can see it here](https://github.com/ysozkaya/RealSense-Jetson)
 
 As it is a fresh build, it can take a while to finish. It is important to make sure to know what the code does, so we can be sure what it is modifying or changing on your device.
 
@@ -64,11 +66,23 @@ To try the SDK, you can run on the terminal the following command:
 	
 To try the python library, you can use the [Streaming example](https://github.com/IntelRealSense/librealsense/blob/master/wrappers/python/examples/python-tutorial-1-depth.py) from the Intel Github.
 
+It is important to mention that the code from `ysozkaya` also install python3 and the dependencies needed for the realsense library, so this is the first step needed for the process.
+
 ##### Halcon Runtime for embedded devices
+
+For this
 
 ##### Halcon python library
 
 ##### Serial communication
+
+By default, the UART port is used automatically to start a console once the board is energized. We need to disable this service to automatically start the communication with other devices. To do so, we need to run the following commands on the console:
+
+	systemctl stop nvgetty
+	systemctl disable nvgetty
+	udevadm trigger
+
+Once this is finished, you need to reboot the Jetson Nano.
 
 #### Raspberry Pi 4
 As made with the Jetson Nano board, we need to do the OS installation for this board. We are using the basic Raspbian installation present on the official Raspberry Pi Imager. The installation steps are available on the [Raspberry documentation](https://www.raspberrypi.com/documentation/computers/getting-started.html). 
@@ -77,9 +91,46 @@ It is mandatory to run an update on your first boot using the following commands
 
 	sudo apt-get update
 	sudo apt-get upgrade
+	
+Now we can proceed with the with the installation/configuration of the other dependencies:
 
+1. Serial communication
+2. Drone control libraries 
 
+##### Serial communication
+
+To start any communication between the Raspberry, the Pixhawk and the Jetson Nano, it is important to enable the serial communication on the boards. For the Raspberry, we need to run the command:
+
+	sudo raspi-config
+	
+and then go to `Interface Options` and then `Serial Port`. Here, we enable only the serial port hardware. Normally, it first ask us if we like a login shell to be accessible over serial, but thats not required.
+
+It is important to mention that out of the box, the raspberry has the first serial port connected to the bluetooth controller and it doesnt have all the UART ports enabled, so it is needed to configure the ports in the correct way to avoid any problem. For the first implementation, we disabled the bluetooth device to connect the Pixhawk to the UART0 and the Jetson Nano to the UART4. To do so, we need to edit the `config.txt` file, which can be made runing on the terminal:
+
+	sudo nano /boot/config.txt
+	
+and adding the follow lines at the bottom of the text and saving it:
+
+	enable_uart=1
+	dtoverlay=disable-bt
+	dtoverlay=uart5
+
+Once this is done, you need to reboot the Raspberry and the communication can be made without any problem.
+
+##### Drone control libraries
+
+Controlling the Pixhawk using the Raspberry as a main computer can be achieved by installing some dependencies and libraries from python.
+
+You only need to run each of the following commands on the console:
+
+	sudo apt-get install python-pip
+	sudo apt-get install python-dev
+	sudo apt-get install screen python-wxgtk4.0 python-lxml
+	
+	sudo pip install pyserial
+	sudo pip install dronekit
+	sudo pip install MAVProxy
+	
 #### Pixhawk 1
 
-
-
+The Pixhawk used for this building already had the OS installed, but a fresh installation could be empty of any OS. To install it, it is recommended to use Mission Planer on Windows to do the initial configuration, as we are using Ardupilot as firmware. Check the official [Ardupilot/Mission Planer installation guide](https://ardupilot.org/copter/docs/configuring-hardware.html) for more information.
