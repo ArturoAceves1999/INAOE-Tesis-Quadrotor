@@ -15,6 +15,12 @@
 <par name="TresholdDistance" base_type="ctrl" dimension="0"/>
 <par name="AreaChange" base_type="ctrl" dimension="0"/>
 <par name="AreaEvation" base_type="ctrl" dimension="0"/>
+<par name="UAVFrameRatio" base_type="ctrl" dimension="0"/>
+<par name="TresholdDistanceMin" base_type="ctrl" dimension="0"/>
+<par name="NumIntervals" base_type="ctrl" dimension="0"/>
+<par name="DilationSensibility" base_type="ctrl" dimension="0"/>
+<par name="TresholdDistanceStop" base_type="ctrl" dimension="0"/>
+<par name="DifferenceXYPoint" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
 <par name="GrayVal" base_type="ctrl" dimension="0"/>
@@ -25,9 +31,36 @@
 </oc>
 </interface>
 <body>
-<l>EvasionMode:= false</l>
+<c>*-----------------------------------------------Halcon Image processing program-------------------------------------------</c>
+<c>*</c>
+<c>* Developer: Arturo Javier Aceves Ramírez</c>
+<c>* Created: 15-11-2024</c>
+<c>* Project: Real-Time Trajectory Update of a Quadcopter Based on Area Analysis for Adaptive Evasion of Undetected Obstacles</c>
+<c>* </c>
+<c>* You can contact me by sending an email to: maclon31@hotmail.com</c>
+<c>*</c>
+<c>*--------------------------------------------------------------------------------------------------------------------------</c>
 <c></c>
-<l>get_image_size (Z, Width, Height)</l>
+<c>*------------------INPUT-------------------</c>
+<c>*</c>
+<c>* Iconic Values:</c>
+<c>*</c>
+<c>* Z         = The camera data with the fill holes filter from pyrealsense2</c>
+<c>* OldFrame  = The last image processed by Halcon. Used to compare the area changes on each frame</c>
+<c>*</c>
+<c>* Control values:</c>
+<c>*</c>
+<c>* Multi               = The image ratio between the minimum and maximum distance of image detection. Used to scale the image for halcon processing.</c>
+<c>* OldXYFarthestPoint  = Old (x,y) available value that halcon gave. Used to compare the distance changes between each frame.</c>
+<c>* ThresholdDistance   = The minimum distance that the program is going to detect. Used on the threshold, by multiplying it by Multi.</c>
+<c>* AreaChange          = The desired change between old and new image. Used it to compare the diference between the old and the new area of the image record.</c>
+<c>* AreaEvation         = The minimum area needed to start evading something</c>
+<c>* UAVFrameDiameter       = Diameter of the UAV. Used to erode the available area the image</c>
+<c></c>
+<c></c>
+<l>EvasionMode:= 0</l>
+<l>test := 0</l>
+<l>get_image_size (Z, Width, Height) </l>
 <c></c>
 <c>*----------------------------------------Image processing START----------------------</c>
 <c></c>
@@ -36,22 +69,63 @@
 <l>rotate_image (ImageScaled, ImageRotated, 180, 'constant')</l>
 <l>get_grayval (ImageScaled, Height/2, Width/2, GrayVal)</l>
 <c></c>
-<c></c>
 <l>treshholdregion := TresholdDistance*Multi</l>
+<l>treshholdregionmin := TresholdDistanceMin*Multi</l>
+<l>treshholdregionstop := TresholdDistanceStop*Multi</l>
 <l>tuple_round (treshholdregion, treshholdregion)</l>
+<l>tuple_round (treshholdregionmin, treshholdregionmin)</l>
 <c></c>
 <l>*threshold (ImageRotated, Regions, 18, 126)</l>
-<l>threshold (ImageRotated, Regions,treshholdregion, 255)</l>
-<l>opening_circle (Regions, RegionOpening, 3)</l>
-<l>erosion_circle (RegionOpening, RegionInterest, 20)</l>
+<l>*threshold (ImageRotated, Regions,treshholdregion, 255)</l>
+<l>*opening_circle (Regions, RegionOpening, 3)</l>
+<l>* erosionradious := UAVFrameRatio/1000</l>
+<l>*erosion_circle (RegionOpening, RegionInterest,erosionradious)</l>
+<c></c>
+<l>threshold(ImageRotated, RegionStop, 5, treshholdregionmin-1)</l>
+<l>area_center(RegionStop, AreaStop, _, _)</l>
+<l>if(AreaStop&gt;=1)</l>
+<l>    test := 2</l>
+<l>    XYFarthestPoint := OldXYFarthestPoint</l>
+<l>    region_to_bin (RegionStop, ImageHalcon, 255, 0, Width, Height)</l>
+<l>    EvasionMode := 2</l>
+<l>    return()</l>
+<l>endif</l>
+<c></c>
+<c></c>
+<c></c>
+<l>gen_empty_region(fullregion)</l>
+<c></c>
+<l>step := (treshholdregion - treshholdregionmin) / NumIntervals</l>
+<c></c>
+<c>* Crear una lista para almacenar regiones segmentadas</c>
+<c></c>
+<c>* Bucle para aplicar `threshold` en cada intervalo</c>
+<l>for i := 0 to NumIntervals - 1 by 1</l>
+<c>    * Definir los límites del umbral</c>
+<l>    LowerBound := treshholdregionmin + (i * step) + 1</l>
+<l>    UpperBound := treshholdregionmin + ((i + 1) * step)</l>
+<l>    erosionradious := (UAVFrameRatio*Multi/LowerBound)*DilationSensibility</l>
+<c></c>
+<c>    * Aplicar el threshold en el intervalo</c>
+<l>    threshold(ImageRotated, Region, LowerBound, UpperBound)</l>
+<l>    opening_circle (Region, RegionOpening, 3)</l>
+<l>    dilation_circle (RegionOpening, RegionComp, erosionradious)</l>
+<c></c>
+<c>    * Almacenar la región en la lista</c>
+<l>    *concat_obj(Regions, Region, Regions)</l>
+<l>    union2 (fullregion, RegionComp, fullregion)</l>
+<l>endfor</l>
+<c></c>
+<l>complement (fullregion, RegionInterest)</l>
+<c></c>
 <c></c>
 <c>* if using avoid region logic, use this function</c>
 <l>* dilation_circle (RegionOpening, RegionInterest, 20)</l>
 <l>region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <l>convert_image_type (OldFrame, OldFrame, 'byte')</l>
 <l>check_difference (OldFrame, ImageHalcon, Selected, 'diff_outside', -5, 5, 0, 0, 0)</l>
-<l>area_center(Selected, test, _, _)</l>
-<l>if(test&lt;=AreaChange)</l>
+<l>area_center(Selected, AreaChangeNew, _, _)</l>
+<l>if(AreaChangeNew&lt;=AreaChange)</l>
 <l>    threshold (OldFrame, RegionInterest,254, 255)</l>
 <l>    region_to_bin (RegionInterest, ImageHalcon, 255, 0, Width, Height)</l>
 <l>endif</l>
@@ -67,25 +141,22 @@
 <l>    tuple_round (RowFarthestEdge, RowFarthestEdge)</l>
 <l>    tuple_round (ColFarthestEdge, ColFarthestEdge)</l>
 <c>    </c>
-<l>    distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)</l>
-<c>    </c>
-<c>    *------------------Return iconic variables</c>
-<c>    </c>
+<l>    distance_pp (RowFarthestEdge, ColFarthestEdge, OldXYFarthestPoint[1], OldXYFarthestPoint[0], DifferencePoint)    </l>
 <c>    </c>
 <c>    *------------------Return control variables</c>
-<l>    ifelse(DifferencePoint&lt;=20)</l>
+<l>    ifelse(DifferencePoint&lt;=DifferenceXYPoint)</l>
 <l>        XYFarthestPoint := OldXYFarthestPoint</l>
 <l>    else</l>
 <l>        XYFarthestPoint := [ColFarthestEdge,RowFarthestEdge]</l>
 <l>    endif</l>
-<l>    EvasionMode:=true</l>
+<l>    EvasionMode := 1</l>
 <l>else</l>
 <l>    XYFarthestPoint:=[Width/2,Height/2]</l>
 <l>endif</l>
 <c></c>
 <l>DeptVal := GrayVal/Multi</l>
 <l>tuple_round (DeptVal, DeptVal)</l>
-<l>*test := OldXYFarthestPoint[1]</l>
+<c></c>
 <l>return ()</l>
 </body>
 <docu id="processImageHalcon">
@@ -93,13 +164,19 @@
 <parameter id="AreaChange"/>
 <parameter id="AreaEvation"/>
 <parameter id="DeptVal"/>
+<parameter id="DifferenceXYPoint"/>
+<parameter id="DilationSensibility"/>
 <parameter id="EvasionMode"/>
 <parameter id="GrayVal"/>
 <parameter id="ImageHalcon"/>
 <parameter id="Multi"/>
+<parameter id="NumIntervals"/>
 <parameter id="OldFrame"/>
 <parameter id="OldXYFarthestPoint"/>
 <parameter id="TresholdDistance"/>
+<parameter id="TresholdDistanceMin"/>
+<parameter id="TresholdDistanceStop"/>
+<parameter id="UAVFrameRatio"/>
 <parameter id="XYFarthestPoint"/>
 <parameter id="Z"/>
 <parameter id="test"/>

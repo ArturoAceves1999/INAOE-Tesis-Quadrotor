@@ -4,6 +4,7 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import time
+import math
 #from types import SimpleNamespace
 
 
@@ -11,16 +12,28 @@ def initvariables():
     class initvar:
         xresolution = 640
         yresolution = 480
+        FOVXcamera = 87
         framescamera = 30
+        numdivisions = 30
+        diffXYpoint = 20
 
         # Scale of image values
         minrange = 0
         maxrange = 7000
         multi = 255.0 / (maxrange - minrange)
-        treshold = 2500
-        areachange = 6000
-        percentevasion = 0.1
-        areaevasion = int(percentevasion*307200) #Range between 0-307,200
+        tresholdmax = 3500
+        tresholdmin = 700
+        tresholstop = 500
+        areachange = 4000 #Range between 0-307,200 if 640X480. If bigger, the image will need an even bigger change between frames to be modified
+        percentevasion = 0.8
+        areaevasion = int(percentevasion*(xresolution*yresolution)) #Range between 0-307,200 if 640X480
+        # Drone dimension
+        frameradius = 327.5 #On mm
+
+        frameratio = (xresolution*frameradius)/(2*math.tan(math.radians(FOVXcamera/2)))
+        sensibility = 0.7
+
+
     return initvar
 
 
@@ -81,7 +94,7 @@ def cameraData(pipeline):
     return depth_image, color_image
 
 
-def halconProcessing(depthimage, externalcall, multi, treshold, areachange, areaevation, oldXYfarthest, oldimagehalcon):
+def halconProcessing(depthimage, externalcall, multi, treshold, areachange, areaevation, frameratios, tresholdmin, interval, sensibility, treshstop, diffXYp, oldXYfarthest, oldimagehalcon):
     # now = datetime.datetime.now()
     depthimageHalcon = ha.himage_from_numpy_array(depthimage)
     oldimagehalcon = ha.himage_from_numpy_array(oldimagehalcon)
@@ -89,12 +102,17 @@ def halconProcessing(depthimage, externalcall, multi, treshold, areachange, area
 
     externalcall.set_input_iconic_param_by_name('Z', depthimageHalcon)
     externalcall.set_input_iconic_param_by_name('OldFrame', oldimagehalcon)
-
     externalcall.set_input_control_param_by_name('Multi', multi)
     externalcall.set_input_control_param_by_name('TresholdDistance', treshold)
     externalcall.set_input_control_param_by_name('AreaChange', areachange)
     externalcall.set_input_control_param_by_name('AreaEvation', areaevation)
     externalcall.set_input_control_param_by_name('OldXYFarthestPoint', oldXYfarthest)
+    externalcall.set_input_control_param_by_name('UAVFrameRatio', frameratios)
+    externalcall.set_input_control_param_by_name('TresholdDistanceMin', tresholdmin)
+    externalcall.set_input_control_param_by_name('NumIntervals', interval)
+    externalcall.set_input_control_param_by_name('DilationSensibility', sensibility)
+    externalcall.set_input_control_param_by_name('TresholdDistanceStop', treshstop)
+    externalcall.set_input_control_param_by_name('DifferenceXYPoint', diffXYp)
     externalcall.execute()
     imagereturnhalcon = externalcall.get_output_iconic_param_by_name('ImageHalcon')
     deptval = externalcall.get_output_control_param_by_name('DeptVal')
@@ -155,7 +173,13 @@ def main():
             start = time.time()
             [depth_image, color_image] = cameraData(pipeline)
             # depthpoint = int(depth_image[midy, midx])
-            [imageReturnHalcon2, XYfarthest, deptVal, evasionmode] = halconProcessing(depth_image, externalcall, initialVariables.multi, initialVariables.treshold, initialVariables.areachange, initialVariables.areaevasion, oldXYfarthest, oldimagehalcon)
+            [imageReturnHalcon2, XYfarthest, deptVal, evasionmode] = halconProcessing(depth_image, externalcall, initialVariables.multi,
+                                                                                      initialVariables.tresholdmax, initialVariables.areachange,
+                                                                                      initialVariables.areaevasion, initialVariables.frameratio,
+                                                                                      initialVariables.tresholdmin, initialVariables.numdivisions,
+                                                                                      initialVariables.sensibility, initialVariables.tresholstop,
+                                                                                      initialVariables.diffXYpoint,
+                                                                                      oldXYfarthest, oldimagehalcon)
             print("Farthest point area: ", XYfarthest)
             oldXYfarthest = XYfarthest
             oldimagehalcon = imageReturnHalcon2
