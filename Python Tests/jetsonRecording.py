@@ -93,5 +93,6 @@ try:
 
 finally:
 
+    cv2.imwrite('640-460-7mFIX.png', depth_colormap)
     # Stop streaming
     pipeline.stop()
