@@ -61,13 +61,12 @@ try:
     while framenumber < 32:
         if framenumber == 1:
             frames = pipeline.wait_for_frames()
-            frames = pipeline.wait_for_frames()
             depth_frame = frames.get_depth_frame()
             hole_filling = rs.hole_filling_filter()
             filled_depth = hole_filling.process(depth_frame)
 
             # Convert images to numpy arrays
-            depth_image = np.asanyarray(filled_depth.get_data())
+            depth_image = cv2.rotate(np.asanyarray(filled_depth.get_data()), cv2.ROTATE_180)
             depth_image = depth_image * np.exp(depth_image * -0.00001)
             depthpoint = depth_image[midy, midx]
             # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
@@ -92,7 +91,9 @@ try:
 
 
 finally:
-
-    cv2.imwrite('640-460-7mFIX.png', depth_colormap)
+    color_frame = frames.get_color_frame()
+    color_image = cv2.rotate(np.asanyarray(color_frame.get_data()), cv2.ROTATE_180)
+    cv2.imwrite('640-460-DEPTHJetson.png', depth_colormap)
+    cv2.imwrite('640-460-COLORJetson.png', color_image)
     # Stop streaming
     pipeline.stop()
