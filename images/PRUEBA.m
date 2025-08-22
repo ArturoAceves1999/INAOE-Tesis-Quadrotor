@@ -1,0 +1,230 @@
+%%
+%|----------------------------------------------------------------------|%
+%|                                                                      |%
+%|          Metodología para el ajuste de la variación de               |%
+%|                    temperatura anual por medio                       |%
+%|                         de hipótesis nula                            |%
+%|                                                                      |%
+%|      Autores:                                                        |%
+%|                                                                      |%
+%|                C. Juarez        -       christopher.juarez@inaoe.mx  |%
+%|                E. Ovando        -       eddier.ovando@inaoe.mx       |%
+%|                A. Aceves        -       arturo.aceves@inaoe.mx       |%
+%|                J. Correa        -       john.correa@inaoe.mx         |%
+%|                                                                      |%
+%|      Programa realizado para la materia de Cómputo Científico        |%
+%|                                                                      |%
+%|                               INAOE                                  |%
+%|                                                                      |%
+%|----------------------------------------------------------------------|%
+
+%% Configuración del .m, no tocar
+clc; clear; close all;
+epsilon = 2.2204e-16;
+
+%% Data
+    %% Data added by the user
+    minpol = [2 3 4 5]; %Por favor, ingrese en forma matricial el grado de
+                      %los polinomios que desea comparar. Estos deben de
+                      %estar en la misma fila.
+    points = readtable('salida.txt'); %Por favor, ingrese el nombre
+                                           %del archivo que contiene los 
+                                           %datos a analizar.
+    yearsEvaluation = [0:7700]; %Por favor, ingrese el rango de años que
+                                   %desea evaluar.
+
+    %% Data processing
+    points = points{:,:};
+    meanPoints = mean(points(:,1));
+    standDev = std(points(:,1));
+    %meanPoints = 0;
+    %standDev = 1;
+%     meanPoints = 0; %Si se desea eliminar el acondicionamiento, comente 
+% %                       las lineas 38 y 39, quite de comentarios las 
+% %                       lineas 40 y 43
+%     standDev = 1;
+
+    %Variables para el nivel de confiabilidad deseado, 0.99 de caja.
+    p = 0.01;
+    k = 0.2576;
+    
+    %Valor CTSS, el cual será constante a pesar el polinomio a integrar
+    CTSS = sum((points(:,2) - mean(points(:,2))).^2); 
+
+%% Article 1 process
+[records,siz] = size(points);
+pointsNormal = (points(:,1)-meanPoints)/standDev;
+maxDegreePol = max(minpol)+1;
+
+    %Inicialización de gráficas, no tocar.
+    f1 = figure(1) ;ax1 = axes ;hold(ax1,'on'); legend; grid on;
+    f2 = figure(2) ;ax2 = axes ;hold(ax2,'on'); legend; grid on;
+    f3 = figure(3) ;ax3 = axes ;hold(ax3,'on'); legend; grid on;
+
+    plot(ax1,points(:,1),points(:,2),'o','DisplayName','Media anual')
+    xlabel(ax1,"Tiempo (Años)")
+    ylabel(ax1,"Anomalía de temperatura: (C°)")
+    title(ax1,"Índice de Temperatura media global anual")
+
+    xlabel(ax2,"Tiempo (Años)")
+    ylabel(ax2,"Residual (°C)")
+    title(ax2,"Residuales del ajuste a los datos de temperatura anuales")
+
+    xlabel(ax3,"Ciclos/Año")
+    ylabel(ax3,"dB")
+    title(ax3,"Periodogramas de resultados de temperatura anuales")
+
+%Se inicializa matriz donde se guardaran los coeficientes de los 
+%polinomios evaluados.
+polynomials = zeros(maxDegreePol,numel(minpol)); 
+polynomialsH =  zeros(maxDegreePol,numel(minpol));
+%Valor iterador que usamos para saber cuantos polinomios llevamos
+%evaluados.
+numPol = 1; 
+
+for degree = minpol
+%% Article 1 process
+    %Se inicializa matriz de vandermonde del tamaño del polinomio a evaluar
+    vanMat = zeros(records,degree);  
+    
+    for n = 1:degree
+        vanMat(:,n) = pointsNormal.^(n-1);
+    end
+    
+    [Q , R] = qr((vanMat')*vanMat);
+    
+    %Operación para obtener el polinomio interpolador
+    polArticle = inv(R)*(inv(Q)*(vanMat'*points(:,2)));
+    
+    %Se añade un 0 al final de la variable para tener el mismo tamaño
+    %en todos los polinomios y poder almacenarlos en polynomials
+    polArticle(maxDegreePol) = 0;
+    polArticle = flip(polArticle);
+    polynomials(:,numPol) = polArticle;
+    %Evaluación del polinomio para obtener las temperaturas.
+    evaluations = polyval(polArticle,(yearsEvaluation-meanPoints)/standDev);
+    %Evaluación del polinomio para obtener su error con la información de 
+    %los datos.
+    evalRel = polyval(polArticle,(points(:,1)-meanPoints)/standDev)-points(:,2);
+    
+    %Datos para periodograma
+    [per,f] = periodogram(evalRel,[],[],1);
+%     per = 10*log10(per);
+    [M , I] = max(per);
+%% Article 2 process
+
+    %Calculo de SSR
+    SSR = evalRel'*evalRel;   
+    %Calculo de Va
+    Va = (SSR/(records-degree))*(inv(R)*(inv(R)'));
+    %Creación de matriz de correlación
+    Cij = zeros(degree);
+    
+    for j = 1:degree
+        for i = 1:degree
+            Cij(i,j) = Va(i,j)/(sqrt(Va(i,i))*sqrt(Va(j,j)));
+        end
+    end
+    
+    %Impresiones de los valores obtenidos 
+    fprintf("Pol. Grado: " + (degree-1));
+    fprintf("\n%f",(polArticle'));
+    fprintf("\nCondición de la matriz: %f",cond(vanMat));
+    fprintf("\nSSR: %f",SSR);
+    fprintf("\nR^2: %f",(1-(SSR/CTSS)));
+    polArticle=flip(polArticle);
+    
+    %Creación de la variable para encontrar el coeficiente con el
+    %ratio más pequeño. En este caso, se inicializa con el primer 
+    %coeficiente del polinomio. El primer valor almacena el ratio del
+    %coeficiente y el segundo el grado de este coeficiente.
+    nmin = [abs(polArticle(1))/sqrt(Va(1,1)) 1];
+    
+    %For loop usado para imprimir la varianza, el ratio y el nivel de 
+    %confidencialidad para cada coeficiente del polinomio obtenido. Asi
+    %mismo, se obtiene el coeficiente con el ratio más pequeño, el cual se
+    %propondra para su eliminación en la siguiente etapa.
+    for n = 1:degree
+        ratio = abs(polArticle(n)) /sqrt(Va(n,n));
+        fprintf("\nVariance for C%i: %f to %f",n, polArticle(n)-sqrt(Va(n,n)),polArticle(n)+sqrt(Va(n,n)));
+        fprintf("; Ratio: %f", ratio);
+        fprintf("; Confidence level: Pr{%f < a%i < %f} = %f",(polArticle(n)-(k*sqrt(Va(n,n)))),n,(polArticle(n)+(k*sqrt(Va(n,n)))),(1-p));
+        if (ratio < nmin(1))
+            nmin = [abs(polArticle(n)) /sqrt(Va(n,n)) n]; 
+        end
+    end
+    %"Impresión" final de la matriz de de correlación
+    Cij
+    
+    %% Processing data for reduced polynomial
+    
+    vanMatH = vanMat;
+    %Eliminación de columna propuesta en matriz de VanderMonde
+    vanMatH(:,nmin(2)) = [];
+    [QH , RH] = qr((vanMatH')*vanMatH);
+    polArticleH = zeros(degree, 1);
+    %Evaluación de polinomio reducido propuesto.
+    polArticleH = inv(RH)*(inv(QH)*(vanMatH'*points(:,2)));
+    
+    %Proceso de adición de un 0 en el grado propuesto a ser eliminado
+    if (nmin(2) == 1)
+        polArticleH = [ 0 ; polArticleH];
+    elseif (nmin(2) == degree)
+        polArticleH = [polArticleH ; 0];
+    else
+        polArticleH = [polArticleH(1:nmin(2)-1) ; 0 ;polArticleH(nmin(2):end)];
+    end
+    %Nuevamente, el polinomio es acondicionado para que tenga el mismo
+    %tamaño que el grado máximo y poder almacenarlo junto con los demas 
+    %polinomios en polynomialsH.
+    polArticleH(maxDegreePol) = 0;
+    polArticleH = flip(polArticleH);
+    polynomialsH(:,numPol) = polArticleH;
+    
+    %Evaluación del nuevo polinomio reducido para obtener las temperaturas.
+    evaluationsH = polyval(polArticleH,(yearsEvaluation-meanPoints)/standDev);
+    %Evaluación del nuevo polinomio reducido para obtener su error con 
+    %los datos.
+    evalRelH = polyval(polArticleH,(points(:,1)-meanPoints)/standDev)-points(:,2);
+    
+    %Datos para periodograma
+    [perH,fH] = periodogram(evalRelH,[],[],1); 
+%     perH = 10*log10(perH);
+    [MH , IH] = max(perH);
+    
+    %Calculo de SSR de nuevo polinomio.
+    SSRH = evalRelH'*evalRelH;
+    
+    u= ((SSRH-SSR)/SSR)*((records-degree)/(degree-nmin(2)));
+    fprintf("Ratio u: %f , please compare it with the F-table using D1=%i and D2=%i to confirm the null hypothesis",u,(records-degree),(degree-nmin(2)));
+    
+    %Impresiones de datos de nuevo polinomio reducido.
+    % fprintf("\n-----------")
+    % fprintf("Pol mínimo sin C" + nmin(2));
+    % fprintf("\n%f",(polArticleH'));
+    % fprintf("\nCondición de la matriz: %f",cond(vanMatH));
+    % fprintf("\nSSR: %f",SSRH);
+    % fprintf("\nR^2: %f",(1-(SSRH/CTSS)));
+    
+    fprintf("\n_____________________________________________\n");
+    numPol = numPol + 1;
+    %% Plots
+    %Gráficas de datos originales vs polinomios vs polinomios minimos
+    plot(ax1,yearsEvaluation,evaluations,'DisplayName',"Ajuste: P" + (degree-1)+"(t)",'LineWidth',2)
+    %plot(ax1,yearsEvaluation,evaluationsH,'--','DisplayName',"Min. Ajuste: P" + (degree-1)+"(t)",'LineWidth',2)
+    
+    %Gráficas de residuales de polinomios vs polinomios minimos
+    plot(ax2,points(:,1),evalRel,'DisplayName',"Residual P" + (degree-1) + "(t)",'LineWidth',2)
+    %plot(ax2,points(:,1),evalRelH,'--','DisplayName',"Residual P" + (degree-1) + "(t)",'LineWidth',2)
+    
+    %Gráficas de periodogramas de polinomios normales y mínimos
+    plot(ax3,f,per,'DisplayName',"Residual P" + (degree-1) + "(t)",'LineWidth',2)
+    %plot(ax3,fH,perH,'--','DisplayName',"Min. Residual P" + (degree-1) + "(t)",'LineWidth',2)
+    
+    %Gráfica de puntos máximos del periodograma, marcando la frecuencia y
+    %los años
+    plot(ax3,f(I),M,'*','DisplayName',"Max. P" + (degree-1) + "(t), F: " + round(f(I),4) + " Hz, T: " + (1/f(I)) + " Años",'MarkerSize',10)
+end
+hold(ax1,'off')
+hold(ax2,'off')
+hold(ax3,'off')
